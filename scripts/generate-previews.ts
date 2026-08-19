@@ -9,8 +9,40 @@ import { deflateSync } from "node:zlib";
 import { writeFile, mkdir } from "node:fs/promises";
 import path from "node:path";
 import { renderNowPlayingCard, renderOfflineCard } from "../lib/render";
+import { THEMES, parseThemeParams, type ThemeConfig } from "../lib/theme";
 
 const ASSETS_DIR = path.join(__dirname, "..", "assets");
+
+const DEFAULT_STYLE = parseThemeParams({});
+
+/**
+ * Small standalone swatch (not a full card) used in the README's theme
+ * table: a colored strip for background/title/artist/lyrics/progressBar/
+ * equalizer, so each preset is recognizable without rendering a full card
+ * per theme.
+ */
+function buildPaletteSwatchSvg(theme: ThemeConfig): string {
+  const width = 200;
+  const height = 32;
+  const swatchColors = [
+    theme.title,
+    theme.artist,
+    theme.lyrics,
+    theme.progressBar,
+    theme.equalizer,
+  ];
+  const circles = swatchColors
+    .map((color, index) => {
+      const cx = 20 + index * 24;
+      return `<circle cx="${cx}" cy="${height / 2}" r="8" fill="${color}" stroke="${theme.border}" stroke-width="1" />`;
+    })
+    .join("");
+
+  return `<svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Theme color palette">
+  <rect x="0" y="0" width="${width}" height="${height}" rx="6" fill="${theme.background}" stroke="${theme.border}" stroke-width="1" />
+  ${circles}
+</svg>`;
+}
 
 // --- Minimal dependency-free PNG encoder, used to synthesize a placeholder
 // album cover (a brand-colored gradient) so the preview doesn't depend on
@@ -104,30 +136,51 @@ async function main() {
   const albumImageUrl = `http://127.0.0.1:${address.port}/album.png`;
 
   try {
-    const playingSvg = await renderNowPlayingCard({
-      isPlaying: true,
-      title: "Midnight City Lights",
-      artist: "Nova Ray",
-      albumImageUrl,
-      progressMs: 96_000,
-      durationMs: 214_000,
-      songUrl: null,
-      lyricLine: "we're chasing neon shadows down the boulevard",
-    });
+    const playingSvg = await renderNowPlayingCard(
+      {
+        isPlaying: true,
+        title: "Midnight City Lights",
+        artist: "Nova Ray",
+        albumImageUrl,
+        progressMs: 96_000,
+        durationMs: 214_000,
+        songUrl: null,
+        lyricLine: "we're chasing neon shadows down the boulevard",
+      },
+      DEFAULT_STYLE
+    );
 
     // Last.fm-mode card: no progressMs/durationMs (Last.fm's recenttracks
     // endpoint has no live playback position), so the progress bar is
     // omitted and lib/lyrics.ts would pick a showcase line instead of a
     // progress-synced one — see pickShowcaseLine() in lib/lyrics.ts.
-    const lastfmSvg = await renderNowPlayingCard({
-      isPlaying: true,
-      title: "Golden Hour",
-      artist: "Sable & Wren",
-      albumImageUrl,
-      lyricLine: "we're painting the sky in gold before it fades",
-    });
+    const lastfmSvg = await renderNowPlayingCard(
+      {
+        isPlaying: true,
+        title: "Golden Hour",
+        artist: "Sable & Wren",
+        albumImageUrl,
+        lyricLine: "we're painting the sky in gold before it fades",
+      },
+      DEFAULT_STYLE
+    );
 
-    const offlineSvg = renderOfflineCard("Nothing Playing");
+    // Demonstrates the ?theme=dracula query-param override end to end.
+    const themedSvg = await renderNowPlayingCard(
+      {
+        isPlaying: true,
+        title: "Violet Hour",
+        artist: "Static Bloom",
+        albumImageUrl,
+        progressMs: 58_000,
+        durationMs: 189_000,
+        songUrl: null,
+        lyricLine: "count the neon lies beneath a violet sky",
+      },
+      parseThemeParams({ theme: "dracula" })
+    );
+
+    const offlineSvg = renderOfflineCard(DEFAULT_STYLE, "Nothing Playing");
 
     await writeFile(
       path.join(ASSETS_DIR, "playing-with-lyrics.svg"),
@@ -140,15 +193,35 @@ async function main() {
       "utf8"
     );
     await writeFile(
+      path.join(ASSETS_DIR, "theme-dracula-example.svg"),
+      themedSvg,
+      "utf8"
+    );
+    await writeFile(
       path.join(ASSETS_DIR, "idle-offline.svg"),
       offlineSvg,
       "utf8"
     );
 
+    let paletteBytes = 0;
+    for (const [name, theme] of Object.entries(THEMES)) {
+      const swatch = buildPaletteSwatchSvg(theme);
+      await writeFile(
+        path.join(ASSETS_DIR, `palette-${name}.svg`),
+        swatch,
+        "utf8"
+      );
+      paletteBytes += swatch.length;
+    }
+
     console.log("Generated preview cards:");
     console.log(`  assets/playing-with-lyrics.svg (${playingSvg.length} bytes)`);
     console.log(`  assets/playing-lastfm-mode.svg (${lastfmSvg.length} bytes)`);
+    console.log(`  assets/theme-dracula-example.svg (${themedSvg.length} bytes)`);
     console.log(`  assets/idle-offline.svg (${offlineSvg.length} bytes)`);
+    console.log(
+      `  assets/palette-*.svg (${Object.keys(THEMES).length} themes, ${paletteBytes} bytes total)`
+    );
   } finally {
     server.close();
   }

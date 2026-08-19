@@ -16,6 +16,7 @@ import {
 } from "../lib/lyrics";
 import { getLastFmNowPlaying } from "../lib/lastfm";
 import { getTrackInfo } from "../lib/provider";
+import { parseThemeParams, THEMES } from "../lib/theme";
 
 const SAMPLE_SYNCED_LYRICS = `[00:00.00] intro line here
 [00:12.50] first verse line here
@@ -250,6 +251,74 @@ test("getTrackInfo returns null when no provider is configured", async () => {
     () => getTrackInfo()
   );
   assert.equal(track, null);
+});
+
+// --- lib/theme.ts --------------------------------------------------------
+
+test("parseThemeParams defaults to the 'default' theme with border_radius 10", () => {
+  const style = parseThemeParams({});
+  assert.deepEqual(style, { ...THEMES.default, borderRadius: 10 });
+});
+
+test("parseThemeParams selects a preset by name, case-insensitively", () => {
+  const style = parseThemeParams({ theme: "Dracula" });
+  assert.equal(style.background, THEMES.dracula.background);
+  assert.equal(style.lyrics, THEMES.dracula.lyrics);
+  assert.equal(style.equalizer, THEMES.dracula.equalizer);
+});
+
+test("parseThemeParams falls back to 'default' for an unknown theme name", () => {
+  const style = parseThemeParams({ theme: "not-a-real-theme" });
+  assert.equal(style.background, THEMES.default.background);
+});
+
+test("parseThemeParams overrides individual colors on top of the base theme, adding '#' when missing", () => {
+  const style = parseThemeParams({
+    theme: "dracula",
+    bg_color: "1a1b26", // no leading '#'
+    lyrics_color: "#ff007f",
+  });
+  assert.equal(style.background, "#1a1b26");
+  assert.equal(style.lyrics, "#ff007f");
+  // Untouched fields keep the base theme's values.
+  assert.equal(style.progressBar, THEMES.dracula.progressBar);
+});
+
+test("parseThemeParams ignores unsafe/invalid color values and keeps the theme default", () => {
+  const style = parseThemeParams({
+    bg_color: "red; } </style><script>alert(1)</script>",
+  });
+  assert.equal(style.background, THEMES.default.background);
+});
+
+test("parseThemeParams accepts bare CSS color keywords", () => {
+  const style = parseThemeParams({ border_color: "tomato" });
+  assert.equal(style.border, "tomato");
+});
+
+test("parseThemeParams parses border_radius, clamping to a safe non-negative range", () => {
+  assert.equal(parseThemeParams({ border_radius: "0" }).borderRadius, 0);
+  assert.equal(parseThemeParams({ border_radius: "24" }).borderRadius, 24);
+  assert.equal(parseThemeParams({ border_radius: "-5" }).borderRadius, 0);
+  assert.equal(parseThemeParams({ border_radius: "not-a-number" }).borderRadius, 10);
+  assert.equal(parseThemeParams({ border_radius: "99999" }).borderRadius, 85);
+});
+
+test("parseThemeParams makes the border transparent when show_border=false", () => {
+  assert.equal(parseThemeParams({ show_border: "false" }).border, "transparent");
+  assert.equal(
+    parseThemeParams({ show_border: "false", border_color: "ff0000" }).border,
+    "transparent"
+  );
+  assert.equal(
+    parseThemeParams({ show_border: "true" }).border,
+    THEMES.default.border
+  );
+});
+
+test("parseThemeParams takes the first value when a param is repeated (array query value)", () => {
+  const style = parseThemeParams({ theme: ["dracula", "nord"] });
+  assert.equal(style.background, THEMES.dracula.background);
 });
 
 // --- runner ----------------------------------------------------------------
