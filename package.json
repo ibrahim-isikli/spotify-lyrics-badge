@@ -1,0 +1,20 @@
+{
+  "name": "spotify-lyrics-badge",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Real-time Spotify Now Playing & synced lyrics SVG badge for your GitHub profile README, hosted on Vercel.",
+  "license": "MIT",
+  "scripts": {
+    "dev": "vercel dev",
+    "build": "tsc --noEmit",
+    "type-check": "tsc --noEmit"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.30",
+    "@vercel/node": "^3.1.6",
+    "typescript": "^5.4.5"
+  }
+}
