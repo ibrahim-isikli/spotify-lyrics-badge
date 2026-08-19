@@ -6,14 +6,12 @@ A dynamic SVG card for your GitHub profile README that shows what you're **curre
 
 ## Overview / Features
 
-- **Minimal, dark card design** inspired by [natemoo-re/novatorem](https://github.com/natemoo-re/novatorem) — rounded corners, muted palette, animated equalizer bars.
-- **Themeable via URL query parameters** — six built-in presets (`default`, `dracula`, `catppuccin`, `tokyo-night`, `nord`, `light`) plus per-field color/radius/border overrides, no redeploy needed. See [🎨 Customization & Themes](#-customization--themes).
-- **Dual-provider playback source** — reads live "now playing" data from either the native Spotify API or Last.fm's scrobble bridge (see [Providers / Setup Modes](#providers--setup-modes)), whichever is configured. Falls back to the most recently played track when nothing is active right now.
-- **Real-time lyric matching** — fetches synced lyrics (`syncedLyrics`) from [LRCLIB](https://lrclib.net), parses the `[mm:ss.xx]` timestamps, and picks the line matching the track's current playback position. Last.fm doesn't report a live position on its own; with an optional linked Redis store, an [Estimated Sync](#estimated-sync-optional-lastfm-only) feature approximates it instead of showing a fixed line.
-- **Zero-dependency SVG rendering** — the card itself is built from a plain template string, no headless browser, no canvas, no external render service. Album art is downloaded once per request and inlined as a base64 `data:` URI so GitHub's Camo image proxy never has to follow a third-party image link.
-- **Edge/Serverless friendly** — a stateless function by default; Estimated Sync is the one opt-in feature that uses external storage (a linked Redis store), and the badge works exactly as before if it isn't configured.
-- **Cache-aware** — response headers are tuned so Camo doesn't freeze on a stale "now playing" snapshot.
-- **Optional live page** — `/live` auto-refreshes the card every few seconds client-side, for a genuinely real-time view outside the static-image constraints of a README. See [Live page](#live-page-real-time-outside-the-readme).
+- **Minimal, dark card design** — rounded corners, muted palette, animated equalizer bars, inspired by [natemoo-re/novatorem](https://github.com/natemoo-re/novatorem).
+- **6 built-in themes + full color customization**, no redeploy needed. See [🎨 Customization & Themes](#-customization--themes).
+- **Works with or without Spotify Premium** — free Last.fm bridge, or the native Spotify API. See [Providers / Setup Modes](#providers--setup-modes).
+- **Synced lyrics from [LRCLIB](https://lrclib.net)**, matched to playback position (or [Estimated Sync](#estimated-sync-optional-lastfm-only) for Last.fm).
+- **Zero-dependency SVG rendering** — plain template string, no headless browser or canvas; album art inlined as base64 so GitHub's Camo proxy never fetches a third party.
+- **Optional [`/live` page](#live-page-real-time-outside-the-readme)** for a genuinely real-time, auto-refreshing view outside the README.
 
 ## Live Preview / Demo
 
