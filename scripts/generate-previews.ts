@@ -115,11 +115,28 @@ async function main() {
       lyricLine: "we're chasing neon shadows down the boulevard",
     });
 
+    // Last.fm-mode card: no progressMs/durationMs (Last.fm's recenttracks
+    // endpoint has no live playback position), so the progress bar is
+    // omitted and lib/lyrics.ts would pick a showcase line instead of a
+    // progress-synced one — see pickShowcaseLine() in lib/lyrics.ts.
+    const lastfmSvg = await renderNowPlayingCard({
+      isPlaying: true,
+      title: "Golden Hour",
+      artist: "Sable & Wren",
+      albumImageUrl,
+      lyricLine: "we're painting the sky in gold before it fades",
+    });
+
     const offlineSvg = renderOfflineCard("Nothing Playing");
 
     await writeFile(
       path.join(ASSETS_DIR, "playing-with-lyrics.svg"),
       playingSvg,
+      "utf8"
+    );
+    await writeFile(
+      path.join(ASSETS_DIR, "playing-lastfm-mode.svg"),
+      lastfmSvg,
       "utf8"
     );
     await writeFile(
@@ -130,6 +147,7 @@ async function main() {
 
     console.log("Generated preview cards:");
     console.log(`  assets/playing-with-lyrics.svg (${playingSvg.length} bytes)`);
+    console.log(`  assets/playing-lastfm-mode.svg (${lastfmSvg.length} bytes)`);
     console.log(`  assets/idle-offline.svg (${offlineSvg.length} bytes)`);
   } finally {
     server.close();

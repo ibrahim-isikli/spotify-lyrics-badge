@@ -73,23 +73,43 @@ function firstNonEmptyLine(text: string): string | null {
 }
 
 /**
+ * Used when the provider can't report real playback position (Last.fm has
+ * no progressMs): picks a short, representative line instead of a
+ * progress-synced one. Skips straight to the second meaningful line where
+ * possible, since the very first synced line is often an intro tag or a
+ * near-empty pickup rather than a line worth showcasing.
+ */
+export function pickShowcaseLine(lines: LyricLine[]): string | null {
+  const meaningful = lines.filter((line) => line.text.length >= 8);
+  const candidates = meaningful.length > 0 ? meaningful : lines;
+  if (candidates.length === 0) return null;
+
+  const index = Math.min(1, candidates.length - 1);
+  return candidates[index].text;
+}
+
+/**
  * Fetches lyrics for a track from LRCLIB and returns the line that should
- * be shown given the track's current playback progress. Falls back to the
- * first plain-text line, then to a generic placeholder, so this never
- * throws — a lyrics outage should never take the whole card down.
+ * be shown. When progressMs is known (Spotify), returns the line matching
+ * that exact playback position. When it isn't (Last.fm has no live
+ * position data), falls back to a representative showcase line. Falls back
+ * further to the first plain-text line, then to a generic placeholder, so
+ * this never throws — a lyrics outage should never take the whole card down.
  */
 export async function getCurrentLyricLine(
   trackName: string,
   artistName: string,
-  durationMs: number,
-  progressMs: number
+  durationMs?: number,
+  progressMs?: number
 ): Promise<string> {
   try {
     const params = new URLSearchParams({
       track_name: trackName,
       artist_name: artistName,
-      duration: String(Math.round(durationMs / 1000)),
     });
+    if (durationMs !== undefined) {
+      params.set("duration", String(Math.round(durationMs / 1000)));
+    }
 
     const response = await fetch(`${LRCLIB_ENDPOINT}?${params.toString()}`);
     if (!response.ok) {
@@ -100,7 +120,10 @@ export async function getCurrentLyricLine(
 
     if (data.syncedLyrics) {
       const lines = parseSyncedLyrics(data.syncedLyrics);
-      const current = getLineAtProgress(lines, progressMs);
+      const current =
+        progressMs !== undefined
+          ? getLineAtProgress(lines, progressMs)
+          : pickShowcaseLine(lines);
       if (current) return current;
     }
 
