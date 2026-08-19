@@ -158,9 +158,46 @@ Pass `?theme=<name>` to apply a preset. Unknown or omitted values fall back to `
 | `nord` | ![nord palette](./assets/palette-nord.svg) | `?theme=nord` |
 | `light` | ![light palette](./assets/palette-light.svg) | `?theme=light` |
 
-Full-card example with `?theme=dracula`:
+Static example with `?theme=dracula`:
 
 ![Dracula theme example](./assets/theme-dracula-example.svg)
+
+### Live theme gallery
+
+These are pulled live from the maintainer's own deployment — same URL, one query param changed per card — so what you see is a real, current (or "Nothing Playing" if nothing's active right now) render in each theme, not a mockup.
+
+<table align="center">
+  <tr>
+    <td align="center">
+      <img src="https://spotify-lyrics-badge-tau.vercel.app/api/spotify-lyrics?theme=default" width="380" alt="default theme example" /><br />
+      <sub><code>?theme=default</code></sub>
+    </td>
+    <td align="center">
+      <img src="https://spotify-lyrics-badge-tau.vercel.app/api/spotify-lyrics?theme=dracula" width="380" alt="dracula theme example" /><br />
+      <sub><code>?theme=dracula</code></sub>
+    </td>
+  </tr>
+  <tr>
+    <td align="center">
+      <img src="https://spotify-lyrics-badge-tau.vercel.app/api/spotify-lyrics?theme=catppuccin" width="380" alt="catppuccin theme example" /><br />
+      <sub><code>?theme=catppuccin</code></sub>
+    </td>
+    <td align="center">
+      <img src="https://spotify-lyrics-badge-tau.vercel.app/api/spotify-lyrics?theme=tokyo-night" width="380" alt="tokyo-night theme example" /><br />
+      <sub><code>?theme=tokyo-night</code></sub>
+    </td>
+  </tr>
+  <tr>
+    <td align="center">
+      <img src="https://spotify-lyrics-badge-tau.vercel.app/api/spotify-lyrics?theme=nord" width="380" alt="nord theme example" /><br />
+      <sub><code>?theme=nord</code></sub>
+    </td>
+    <td align="center">
+      <img src="https://spotify-lyrics-badge-tau.vercel.app/api/spotify-lyrics?theme=light" width="380" alt="light theme example" /><br />
+      <sub><code>?theme=light</code></sub>
+    </td>
+  </tr>
+</table>
 
 ### Query parameters
 
