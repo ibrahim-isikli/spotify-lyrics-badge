@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { getNowPlaying } from "../lib/spotify";
+import { getTrackInfo } from "../lib/provider";
 import { getCurrentLyricLine } from "../lib/lyrics";
 import { renderNowPlayingCard, renderOfflineCard } from "../lib/render";
 
@@ -15,24 +15,24 @@ export default async function handler(
   );
 
   try {
-    const nowPlaying = await getNowPlaying();
+    const track = await getTrackInfo();
 
-    if (!nowPlaying) {
+    if (!track) {
       res.status(200).send(renderOfflineCard());
       return;
     }
 
     const lyricLine = await getCurrentLyricLine(
-      nowPlaying.title,
-      nowPlaying.artist,
-      nowPlaying.durationMs,
-      nowPlaying.progressMs
+      track.title,
+      track.artist,
+      track.durationMs,
+      track.progressMs
     );
 
-    const svg = await renderNowPlayingCard({ ...nowPlaying, lyricLine });
+    const svg = await renderNowPlayingCard({ ...track, lyricLine });
     res.status(200).send(svg);
   } catch (error) {
-    console.error("Failed to render Spotify now-playing card:", error);
-    res.status(200).send(renderOfflineCard("Unable to load Spotify data"));
+    console.error("Failed to render now-playing card:", error);
+    res.status(200).send(renderOfflineCard("Unable to load playback data"));
   }
 }

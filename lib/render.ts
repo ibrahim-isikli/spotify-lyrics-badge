@@ -1,4 +1,4 @@
-import type { NowPlaying } from "./spotify";
+import type { TrackInfo } from "./provider";
 
 const CARD_WIDTH = 480;
 const CARD_HEIGHT = 170;
@@ -14,7 +14,7 @@ const TEXT_MUTED = "#6e7681";
 const ACCENT_COLOR = "#1ed760";
 const TRACK_COLOR = "#30363d";
 
-export interface RenderableTrack extends NowPlaying {
+export interface RenderableTrack extends TrackInfo {
   lyricLine: string;
 }
 
@@ -132,14 +132,32 @@ export async function renderNowPlayingCard(
   const artist = escapeXml(truncate(track.artist, 38));
   const lyric = escapeXml(truncate(track.lyricLine, 56));
 
-  const progressRatio =
-    track.durationMs > 0
-      ? Math.min(1, Math.max(0, track.progressMs / track.durationMs))
-      : 0;
+  const hasProgress =
+    typeof track.progressMs === "number" &&
+    typeof track.durationMs === "number" &&
+    track.durationMs > 0;
+
   const progressBarWidth = 328;
   const progressX = 136;
   const progressY = 104;
-  const progressFillWidth = Math.round(progressBarWidth * progressRatio);
+
+  const progressSection = hasProgress
+    ? (() => {
+        const progressRatio = Math.min(
+          1,
+          Math.max(0, track.progressMs! / track.durationMs!)
+        );
+        const progressFillWidth = Math.round(
+          progressBarWidth * progressRatio
+        );
+        return `
+    <rect x="${progressX}" y="${progressY}" width="${progressBarWidth}" height="4" rx="2" fill="${TRACK_COLOR}" />
+    <rect x="${progressX}" y="${progressY}" width="${progressFillWidth}" height="4" rx="2" fill="${ACCENT_COLOR}" />
+
+    <text x="${progressX}" y="120" font-family="'Segoe UI', Ubuntu, Helvetica, Arial, sans-serif" font-size="9" fill="${TEXT_MUTED}">${formatTime(track.progressMs!)}</text>
+    <text x="${progressX + progressBarWidth}" y="120" font-family="'Segoe UI', Ubuntu, Helvetica, Arial, sans-serif" font-size="9" fill="${TEXT_MUTED}" text-anchor="end">${formatTime(track.durationMs!)}</text>`;
+      })()
+    : "";
 
   const statusLabel = track.isPlaying ? "NOW PLAYING" : "LAST PLAYED";
 
@@ -165,12 +183,7 @@ export async function renderNowPlayingCard(
     <text x="136" y="78" font-family="'Segoe UI', Ubuntu, Helvetica, Arial, sans-serif" font-size="13" fill="${TEXT_SECONDARY}">${artist}</text>
 
     ${renderEqualizer(136, 84, track.isPlaying)}
-
-    <rect x="${progressX}" y="${progressY}" width="${progressBarWidth}" height="4" rx="2" fill="${TRACK_COLOR}" />
-    <rect x="${progressX}" y="${progressY}" width="${progressFillWidth}" height="4" rx="2" fill="${ACCENT_COLOR}" />
-
-    <text x="${progressX}" y="120" font-family="'Segoe UI', Ubuntu, Helvetica, Arial, sans-serif" font-size="9" fill="${TEXT_MUTED}">${formatTime(track.progressMs)}</text>
-    <text x="${progressX + progressBarWidth}" y="120" font-family="'Segoe UI', Ubuntu, Helvetica, Arial, sans-serif" font-size="9" fill="${TEXT_MUTED}" text-anchor="end">${formatTime(track.durationMs)}</text>
+    ${progressSection}
 
     <rect x="0" y="${CARD_HEIGHT - FOOTER_HEIGHT}" width="${CARD_WIDTH}" height="${FOOTER_HEIGHT}" fill="${FOOTER_BG_COLOR}" />
     <line x1="0" y1="${CARD_HEIGHT - FOOTER_HEIGHT}" x2="${CARD_WIDTH}" y2="${CARD_HEIGHT - FOOTER_HEIGHT}" stroke="${BORDER_COLOR}" stroke-width="1" />

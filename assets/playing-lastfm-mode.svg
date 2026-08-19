@@ -1,5 +1,5 @@
-<svg width="480" height="170" viewBox="0 0 480 170" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Spotify now playing: Midnight City Lights by Nova Ray">
-  <title>Midnight City Lights — Nova Ray</title>
+<svg width="480" height="170" viewBox="0 0 480 170" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Spotify now playing: Golden Hour by Sable &amp; Wren">
+  <title>Golden Hour — Sable &amp; Wren</title>
   <defs>
     <clipPath id="cardClip">
       <rect x="0" y="0" width="480" height="170" rx="10" />
@@ -23,9 +23,9 @@
 
     <text x="136" y="34" font-family="'Segoe UI', Ubuntu, Helvetica, Arial, sans-serif" font-size="10" font-weight="600" letter-spacing="1.5" fill="#1ed760">NOW PLAYING</text>
 
-    <text x="136" y="58" font-family="'Segoe UI', Ubuntu, Helvetica, Arial, sans-serif" font-size="17" font-weight="700" fill="#ffffff">Midnight City Lights</text>
+    <text x="136" y="58" font-family="'Segoe UI', Ubuntu, Helvetica, Arial, sans-serif" font-size="17" font-weight="700" fill="#ffffff">Golden Hour</text>
 
-    <text x="136" y="78" font-family="'Segoe UI', Ubuntu, Helvetica, Arial, sans-serif" font-size="13" fill="#b3b3b3">Nova Ray</text>
+    <text x="136" y="78" font-family="'Segoe UI', Ubuntu, Helvetica, Arial, sans-serif" font-size="13" fill="#b3b3b3">Sable &amp; Wren</text>
 
     <g><rect x="136" y="95" width="3" height="3" rx="1" fill="#1ed760">
       <animate attributeName="height" values="3;6;3" dur="0.7s" repeatCount="indefinite" />
@@ -41,14 +41,9 @@
       <animate attributeName="y" values="95;84;95" dur="1.15s" repeatCount="indefinite" />
     </rect></g>
     
-    <rect x="136" y="104" width="328" height="4" rx="2" fill="#30363d" />
-    <rect x="136" y="104" width="147" height="4" rx="2" fill="#1ed760" />
-
-    <text x="136" y="120" font-family="'Segoe UI', Ubuntu, Helvetica, Arial, sans-serif" font-size="9" fill="#6e7681">1:36</text>
-    <text x="464" y="120" font-family="'Segoe UI', Ubuntu, Helvetica, Arial, sans-serif" font-size="9" fill="#6e7681" text-anchor="end">3:34</text>
 
     <rect x="0" y="136" width="480" height="34" fill="#161b22" />
     <line x1="0" y1="136" x2="480" y2="136" stroke="#21262d" stroke-width="1" />
-    <text x="240" y="157" font-family="'Segoe UI', Ubuntu, Helvetica, Arial, sans-serif" font-size="12.5" font-style="italic" text-anchor="middle" fill="#1ed760">♪ we&apos;re chasing neon shadows down the boulevard ♪</text>
+    <text x="240" y="157" font-family="'Segoe UI', Ubuntu, Helvetica, Arial, sans-serif" font-size="12.5" font-style="italic" text-anchor="middle" fill="#1ed760">♪ we&apos;re painting the sky in gold before it fades ♪</text>
   </g>
 </svg>
