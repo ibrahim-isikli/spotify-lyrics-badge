@@ -17,6 +17,7 @@ import {
 import { getLastFmNowPlaying } from "../lib/lastfm";
 import { getTrackInfo } from "../lib/provider";
 import { parseThemeParams, THEMES } from "../lib/theme";
+import { estimateProgressMs, type KeyValueStore } from "../lib/progress-estimator";
 
 const SAMPLE_SYNCED_LYRICS = `[00:00.00] intro line here
 [00:12.50] first verse line here
@@ -319,6 +320,91 @@ test("parseThemeParams makes the border transparent when show_border=false", () 
 test("parseThemeParams takes the first value when a param is repeated (array query value)", () => {
   const style = parseThemeParams({ theme: ["dracula", "nord"] });
   assert.equal(style.background, THEMES.dracula.background);
+});
+
+// --- lib/progress-estimator.ts --------------------------------------------
+
+function createMemoryStore(): KeyValueStore {
+  const data = new Map<string, unknown>();
+  return {
+    async get<T>(key: string) {
+      return data.has(key) ? (data.get(key) as T) : null;
+    },
+    async set(key: string, value: unknown) {
+      data.set(key, value);
+      return "OK";
+    },
+  };
+}
+
+test("estimateProgressMs returns undefined when the track isn't playing", async () => {
+  const store = createMemoryStore();
+  const result = await estimateProgressMs(store, "Song", "Artist", false);
+  assert.equal(result, undefined);
+});
+
+test("estimateProgressMs returns 0 on first sighting of a track and remembers it", async () => {
+  const store = createMemoryStore();
+  const result = await estimateProgressMs(
+    store,
+    "Song",
+    "Artist",
+    true,
+    1_000_000
+  );
+  assert.equal(result, 0);
+});
+
+test("estimateProgressMs returns elapsed time on later calls for the same track", async () => {
+  const store = createMemoryStore();
+  await estimateProgressMs(store, "Song", "Artist", true, 1_000_000);
+  const later = await estimateProgressMs(
+    store,
+    "Song",
+    "Artist",
+    true,
+    1_045_000
+  );
+  assert.equal(later, 45_000);
+});
+
+test("estimateProgressMs is case/whitespace-insensitive when matching the stored track", async () => {
+  const store = createMemoryStore();
+  await estimateProgressMs(store, "Song Title", "The Artist", true, 1_000_000);
+  const later = await estimateProgressMs(
+    store,
+    "  song title  ",
+    "THE ARTIST",
+    true,
+    1_010_000
+  );
+  assert.equal(later, 10_000);
+});
+
+test("estimateProgressMs resets to 0 when the track changes", async () => {
+  const store = createMemoryStore();
+  await estimateProgressMs(store, "First Song", "Artist", true, 1_000_000);
+  const afterChange = await estimateProgressMs(
+    store,
+    "Second Song",
+    "Artist",
+    true,
+    1_500_000
+  );
+  assert.equal(afterChange, 0);
+});
+
+test("estimateProgressMs never goes negative even with clock skew", async () => {
+  const store = createMemoryStore();
+  await estimateProgressMs(store, "Song", "Artist", true, 1_000_000);
+  const earlier = await estimateProgressMs(
+    store,
+    "Song",
+    "Artist",
+    true,
+    999_000
+  );
+  assert.equal(earlier, 0);
 });
 
 // --- runner ----------------------------------------------------------------
