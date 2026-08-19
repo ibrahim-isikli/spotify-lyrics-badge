@@ -19,5 +19,8 @@
     "@vercel/node": "^3.1.6",
     "tsx": "^4.23.12",
     "typescript": "^5.4.5"
+  },
+  "dependencies": {
+    "@upstash/redis": "^1.38.2"
   }
 }
