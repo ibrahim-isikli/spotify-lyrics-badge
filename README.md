@@ -6,14 +6,12 @@ A dynamic SVG card for your GitHub profile README that shows what you're **curre
 
 ## Overview / Features
 
-- **Minimal, dark card design** inspired by [natemoo-re/novatorem](https://github.com/natemoo-re/novatorem) — rounded corners, muted palette, animated equalizer bars.
-- **Themeable via URL query parameters** — six built-in presets (`default`, `dracula`, `catppuccin`, `tokyo-night`, `nord`, `light`) plus per-field color/radius/border overrides, no redeploy needed. See [🎨 Customization & Themes](#-customization--themes).
-- **Dual-provider playback source** — reads live "now playing" data from either the native Spotify API or Last.fm's scrobble bridge (see [Providers / Setup Modes](#providers--setup-modes)), whichever is configured. Falls back to the most recently played track when nothing is active right now.
-- **Real-time lyric matching** — fetches synced lyrics (`syncedLyrics`) from [LRCLIB](https://lrclib.net), parses the `[mm:ss.xx]` timestamps, and picks the line matching the track's current playback position. Last.fm doesn't report a live position on its own; with an optional linked Redis store, an [Estimated Sync](#estimated-sync-optional-lastfm-only) feature approximates it instead of showing a fixed line.
-- **Zero-dependency SVG rendering** — the card itself is built from a plain template string, no headless browser, no canvas, no external render service. Album art is downloaded once per request and inlined as a base64 `data:` URI so GitHub's Camo image proxy never has to follow a third-party image link.
-- **Edge/Serverless friendly** — a stateless function by default; Estimated Sync is the one opt-in feature that uses external storage (a linked Redis store), and the badge works exactly as before if it isn't configured.
-- **Cache-aware** — response headers are tuned so Camo doesn't freeze on a stale "now playing" snapshot.
-- **Optional live page** — `/live` auto-refreshes the card every few seconds client-side, for a genuinely real-time view outside the static-image constraints of a README. See [Live page](#live-page-real-time-outside-the-readme).
+- **Minimal, dark card design** — rounded corners, muted palette, animated equalizer bars, inspired by [natemoo-re/novatorem](https://github.com/natemoo-re/novatorem).
+- **6 built-in themes + full color customization**, no redeploy needed. See [🎨 Customization & Themes](#-customization--themes).
+- **Works with or without Spotify Premium** — free Last.fm bridge, or the native Spotify API. See [Providers / Setup Modes](#providers--setup-modes).
+- **Synced lyrics from [LRCLIB](https://lrclib.net)**, matched to playback position (or [Estimated Sync](#estimated-sync-optional-lastfm-only) for Last.fm).
+- **Zero-dependency SVG rendering** — plain template string, no headless browser or canvas; album art inlined as base64 so GitHub's Camo proxy never fetches a third party.
+- **Optional [`/live` page](#live-page-real-time-outside-the-readme)** for a genuinely real-time, auto-refreshing view outside the README.
 
 ## Live Preview / Demo
 
@@ -22,6 +20,93 @@ The samples below are generated straight from the real render pipeline (`npm run
 | Spotify mode (live progress) | Last.fm mode (no live position) | Nothing playing (fallback) |
 | --- | --- | --- |
 | ![Now playing with synced lyrics](./assets/playing-with-lyrics.svg) | ![Now playing via Last.fm](./assets/playing-lastfm-mode.svg) | ![Offline / nothing playing](./assets/idle-offline.svg) |
+
+## 🎨 Customization & Themes
+
+Every visual aspect of the card is driven by URL query parameters — no fork, no redeploy, no build step. Parsing and validation live in `lib/theme.ts`.
+
+### Built-in themes
+
+Pass `?theme=<name>` to apply a preset. Unknown or omitted values fall back to `default`.
+
+| Theme | Preview palette | Example URL |
+| --- | --- | --- |
+| `default` | ![default palette](./assets/palette-default.svg) | `?theme=default` |
+| `dracula` | ![dracula palette](./assets/palette-dracula.svg) | `?theme=dracula` |
+| `catppuccin` | ![catppuccin palette](./assets/palette-catppuccin.svg) | `?theme=catppuccin` |
+| `tokyo-night` | ![tokyo-night palette](./assets/palette-tokyo-night.svg) | `?theme=tokyo-night` |
+| `nord` | ![nord palette](./assets/palette-nord.svg) | `?theme=nord` |
+| `light` | ![light palette](./assets/palette-light.svg) | `?theme=light` |
+
+Static example with `?theme=dracula`:
+
+![Dracula theme example](./assets/theme-dracula-example.svg)
+
+### Live theme gallery
+
+These are pulled live from the maintainer's own deployment — same URL, one query param changed per card — so what you see is a real, current (or "Nothing Playing" if nothing's active right now) render in each theme, not a mockup.
+
+<table align="center">
+  <tr>
+    <td align="center">
+      <img src="https://spotify-lyrics-badge-tau.vercel.app/api/spotify-lyrics?theme=default" width="380" alt="default theme example" /><br />
+      <sub><code>?theme=default</code></sub>
+    </td>
+    <td align="center">
+      <img src="https://spotify-lyrics-badge-tau.vercel.app/api/spotify-lyrics?theme=dracula" width="380" alt="dracula theme example" /><br />
+      <sub><code>?theme=dracula</code></sub>
+    </td>
+  </tr>
+  <tr>
+    <td align="center">
+      <img src="https://spotify-lyrics-badge-tau.vercel.app/api/spotify-lyrics?theme=catppuccin" width="380" alt="catppuccin theme example" /><br />
+      <sub><code>?theme=catppuccin</code></sub>
+    </td>
+    <td align="center">
+      <img src="https://spotify-lyrics-badge-tau.vercel.app/api/spotify-lyrics?theme=tokyo-night" width="380" alt="tokyo-night theme example" /><br />
+      <sub><code>?theme=tokyo-night</code></sub>
+    </td>
+  </tr>
+  <tr>
+    <td align="center">
+      <img src="https://spotify-lyrics-badge-tau.vercel.app/api/spotify-lyrics?theme=nord" width="380" alt="nord theme example" /><br />
+      <sub><code>?theme=nord</code></sub>
+    </td>
+    <td align="center">
+      <img src="https://spotify-lyrics-badge-tau.vercel.app/api/spotify-lyrics?theme=light" width="380" alt="light theme example" /><br />
+      <sub><code>?theme=light</code></sub>
+    </td>
+  </tr>
+</table>
+
+### Query parameters
+
+Individual colors override the selected theme's field on top of it — you can mix a preset with one or two custom colors, or go fully custom from `default`. Color values accept a hex code with or without the leading `#` (`ff79c6` or `#ff79c6`) or a bare CSS color keyword (`tomato`); anything else is ignored and the theme's default is kept.
+
+| Parameter | Default | Description |
+| --- | --- | --- |
+| `theme` | `default` | One of the built-in theme names above. |
+| `bg_color` | theme's `background` | Card background color. |
+| `title_color` | theme's `title` | Track title text color. |
+| `artist_color` | theme's `artist` | Artist name / muted text (time labels, icons) color. |
+| `lyrics_color` | theme's `lyrics` | Footer lyric line color. |
+| `bar_color` | theme's `progressBar` | Progress bar fill and "NOW PLAYING" label color. |
+| `border_color` | theme's `border` | Card and album-art border color. |
+| `border_radius` | `10` | Corner radius in pixels, `0`–`85`. `0` gives sharp square corners. |
+| `show_border` | `true` | Set to `false` to make the border transparent. |
+
+### Examples
+
+```markdown
+<!-- Dracula theme -->
+![Spotify Lyrics](https://your-domain.vercel.app/api/spotify-lyrics?theme=dracula)
+
+<!-- Custom colors -->
+![Spotify Lyrics](https://your-domain.vercel.app/api/spotify-lyrics?bg_color=000000&lyrics_color=ff007f&border_radius=0)
+
+<!-- Preset + one overridden color, no border, sharp corners -->
+![Spotify Lyrics](https://your-domain.vercel.app/api/spotify-lyrics?theme=nord&bar_color=ebcb8b&show_border=false&border_radius=0)
+```
 
 ## Quick Start & Deployment
 
@@ -140,93 +225,6 @@ It's not embeddable inside the README itself, but you can link to it from one:
 ```
 
 Query parameters (theme, colors, etc. — see below) work here too, e.g. `/live?theme=dracula`.
-
-## 🎨 Customization & Themes
-
-Every visual aspect of the card is driven by URL query parameters — no fork, no redeploy, no build step. Parsing and validation live in `lib/theme.ts`.
-
-### Built-in themes
-
-Pass `?theme=<name>` to apply a preset. Unknown or omitted values fall back to `default`.
-
-| Theme | Preview palette | Example URL |
-| --- | --- | --- |
-| `default` | ![default palette](./assets/palette-default.svg) | `?theme=default` |
-| `dracula` | ![dracula palette](./assets/palette-dracula.svg) | `?theme=dracula` |
-| `catppuccin` | ![catppuccin palette](./assets/palette-catppuccin.svg) | `?theme=catppuccin` |
-| `tokyo-night` | ![tokyo-night palette](./assets/palette-tokyo-night.svg) | `?theme=tokyo-night` |
-| `nord` | ![nord palette](./assets/palette-nord.svg) | `?theme=nord` |
-| `light` | ![light palette](./assets/palette-light.svg) | `?theme=light` |
-
-Static example with `?theme=dracula`:
-
-![Dracula theme example](./assets/theme-dracula-example.svg)
-
-### Live theme gallery
-
-These are pulled live from the maintainer's own deployment — same URL, one query param changed per card — so what you see is a real, current (or "Nothing Playing" if nothing's active right now) render in each theme, not a mockup.
-
-<table align="center">
-  <tr>
-    <td align="center">
-      <img src="https://spotify-lyrics-badge-tau.vercel.app/api/spotify-lyrics?theme=default" width="380" alt="default theme example" /><br />
-      <sub><code>?theme=default</code></sub>
-    </td>
-    <td align="center">
-      <img src="https://spotify-lyrics-badge-tau.vercel.app/api/spotify-lyrics?theme=dracula" width="380" alt="dracula theme example" /><br />
-      <sub><code>?theme=dracula</code></sub>
-    </td>
-  </tr>
-  <tr>
-    <td align="center">
-      <img src="https://spotify-lyrics-badge-tau.vercel.app/api/spotify-lyrics?theme=catppuccin" width="380" alt="catppuccin theme example" /><br />
-      <sub><code>?theme=catppuccin</code></sub>
-    </td>
-    <td align="center">
-      <img src="https://spotify-lyrics-badge-tau.vercel.app/api/spotify-lyrics?theme=tokyo-night" width="380" alt="tokyo-night theme example" /><br />
-      <sub><code>?theme=tokyo-night</code></sub>
-    </td>
-  </tr>
-  <tr>
-    <td align="center">
-      <img src="https://spotify-lyrics-badge-tau.vercel.app/api/spotify-lyrics?theme=nord" width="380" alt="nord theme example" /><br />
-      <sub><code>?theme=nord</code></sub>
-    </td>
-    <td align="center">
-      <img src="https://spotify-lyrics-badge-tau.vercel.app/api/spotify-lyrics?theme=light" width="380" alt="light theme example" /><br />
-      <sub><code>?theme=light</code></sub>
-    </td>
-  </tr>
-</table>
-
-### Query parameters
-
-Individual colors override the selected theme's field on top of it — you can mix a preset with one or two custom colors, or go fully custom from `default`. Color values accept a hex code with or without the leading `#` (`ff79c6` or `#ff79c6`) or a bare CSS color keyword (`tomato`); anything else is ignored and the theme's default is kept.
-
-| Parameter | Default | Description |
-| --- | --- | --- |
-| `theme` | `default` | One of the built-in theme names above. |
-| `bg_color` | theme's `background` | Card background color. |
-| `title_color` | theme's `title` | Track title text color. |
-| `artist_color` | theme's `artist` | Artist name / muted text (time labels, icons) color. |
-| `lyrics_color` | theme's `lyrics` | Footer lyric line color. |
-| `bar_color` | theme's `progressBar` | Progress bar fill and "NOW PLAYING" label color. |
-| `border_color` | theme's `border` | Card and album-art border color. |
-| `border_radius` | `10` | Corner radius in pixels, `0`–`85`. `0` gives sharp square corners. |
-| `show_border` | `true` | Set to `false` to make the border transparent. |
-
-### Examples
-
-```markdown
-<!-- Dracula theme -->
-![Spotify Lyrics](https://your-domain.vercel.app/api/spotify-lyrics?theme=dracula)
-
-<!-- Custom colors -->
-![Spotify Lyrics](https://your-domain.vercel.app/api/spotify-lyrics?bg_color=000000&lyrics_color=ff007f&border_radius=0)
-
-<!-- Preset + one overridden color, no border, sharp corners -->
-![Spotify Lyrics](https://your-domain.vercel.app/api/spotify-lyrics?theme=nord&bar_color=ebcb8b&show_border=false&border_radius=0)
-```
 
 ## Local Development
 
