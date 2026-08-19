@@ -1,12 +1,12 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "functions": {
-    "api/index.ts": {
+    "api/spotify-lyrics.ts": {
       "memory": 128,
       "maxDuration": 10
     }
   },
   "rewrites": [
-    { "source": "/", "destination": "/api" }
+    { "source": "/", "destination": "/api/spotify-lyrics" }
   ]
 }
