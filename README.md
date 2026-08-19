@@ -13,6 +13,7 @@ A dynamic SVG card for your GitHub profile README that shows what you're **curre
 - **Zero-dependency SVG rendering** — the card itself is built from a plain template string, no headless browser, no canvas, no external render service. Album art is downloaded once per request and inlined as a base64 `data:` URI so GitHub's Camo image proxy never has to follow a third-party image link.
 - **Edge/Serverless friendly** — a stateless function by default; Estimated Sync is the one opt-in feature that uses external storage (a linked Redis store), and the badge works exactly as before if it isn't configured.
 - **Cache-aware** — response headers are tuned so Camo doesn't freeze on a stale "now playing" snapshot.
+- **Optional live page** — `/live` auto-refreshes the card every few seconds client-side, for a genuinely real-time view outside the static-image constraints of a README. See [Live page](#live-page-real-time-outside-the-readme).
 
 ## Live Preview / Demo
 
@@ -124,6 +125,22 @@ Or with HTML, if you want to control sizing:
 <img src="https://your-domain.vercel.app/api/spotify-lyrics" alt="Spotify Now Playing" width="480" />
 ```
 
+### Live page (real-time, outside the README)
+
+`GET /live` is a small standalone page (`public/live.html`) that shows the same card but re-fetches it every 3 seconds client-side, so the lyric line visibly advances while you watch — something a static `<img>` in a README can't do, since GitHub strips `<script>`/`<iframe>` from rendered Markdown for security. Visit it directly:
+
+```
+https://your-domain.vercel.app/live
+```
+
+It's not embeddable inside the README itself, but you can link to it from one:
+
+```markdown
+[🔴 Watch it live](https://your-domain.vercel.app/live)
+```
+
+Query parameters (theme, colors, etc. — see below) work here too, e.g. `/live?theme=dracula`.
+
 ## 🎨 Customization & Themes
 
 Every visual aspect of the card is driven by URL query parameters — no fork, no redeploy, no build step. Parsing and validation live in `lib/theme.ts`.
@@ -234,6 +251,9 @@ This renders the Spotify-mode, Last.fm-mode, and offline preview cards, a themed
 ├── scripts/
 │   ├── generate-previews.ts # Offline preview generator for the README gallery
 │   └── test.ts              # Assertion-based checks (LRC logic + mocked Last.fm/provider)
+├── public/
+│   ├── index.html           # Placeholder root page (build-output presence only; "/" rewrites to the badge)
+│   └── live.html            # /live — client-side auto-refreshing real-time view
 ├── assets/                  # Generated preview SVGs used in this README
 ├── .env.example
 ├── package.json
