@@ -7,7 +7,8 @@
   "scripts": {
     "dev": "vercel dev",
     "build": "tsc --noEmit",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "generate:previews": "tsx scripts/generate-previews.ts"
   },
   "engines": {
     "node": ">=18"
@@ -15,6 +16,7 @@
   "devDependencies": {
     "@types/node": "^20.11.30",
     "@vercel/node": "^3.1.6",
+    "tsx": "^4.23.12",
     "typescript": "^5.4.5"
   }
 }

@@ -1,0 +1,54 @@
+<svg width="480" height="170" viewBox="0 0 480 170" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Spotify now playing: Midnight City Lights by Nova Ray">
+  <title>Midnight City Lights — Nova Ray</title>
+  <defs>
+    <clipPath id="cardClip">
+      <rect x="0" y="0" width="480" height="170" rx="10" />
+    </clipPath>
+    <clipPath id="albumClip">
+      <rect x="16" y="16" width="104" height="104" rx="8" />
+    </clipPath>
+  </defs>
+  <g clip-path="url(#cardClip)">
+    <rect x="0" y="0" width="480" height="170" fill="#0d1117" />
+
+    
+      <image
+        x="16" y="16" width="104" height="104"
+        href="data:image/png;base64,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"
+        clip-path="url(#albumClip)"
+        preserveAspectRatio="xMidYMid slice"
+      />
+      <rect x="16" y="16" width="104" height="104" rx="8" fill="none" stroke="#21262d" stroke-width="1" />
+    
+
+    <text x="136" y="34" font-family="'Segoe UI', Ubuntu, Helvetica, Arial, sans-serif" font-size="10" font-weight="600" letter-spacing="1.5" fill="#1ed760">NOW PLAYING</text>
+
+    <text x="136" y="58" font-family="'Segoe UI', Ubuntu, Helvetica, Arial, sans-serif" font-size="17" font-weight="700" fill="#ffffff">Midnight City Lights</text>
+
+    <text x="136" y="78" font-family="'Segoe UI', Ubuntu, Helvetica, Arial, sans-serif" font-size="13" fill="#b3b3b3">Nova Ray</text>
+
+    <g><rect x="136" y="95" width="3" height="3" rx="1" fill="#1ed760">
+      <animate attributeName="height" values="3;6;3" dur="0.7s" repeatCount="indefinite" />
+      <animate attributeName="y" values="95;92;95" dur="0.7s" repeatCount="indefinite" />
+    </rect><rect x="142" y="95" width="3" height="3" rx="1" fill="#1ed760">
+      <animate attributeName="height" values="3;12;3" dur="0.85s" repeatCount="indefinite" />
+      <animate attributeName="y" values="95;86;95" dur="0.85s" repeatCount="indefinite" />
+    </rect><rect x="148" y="95" width="3" height="3" rx="1" fill="#1ed760">
+      <animate attributeName="height" values="3;8;3" dur="1s" repeatCount="indefinite" />
+      <animate attributeName="y" values="95;90;95" dur="1s" repeatCount="indefinite" />
+    </rect><rect x="154" y="95" width="3" height="3" rx="1" fill="#1ed760">
+      <animate attributeName="height" values="3;14;3" dur="1.15s" repeatCount="indefinite" />
+      <animate attributeName="y" values="95;84;95" dur="1.15s" repeatCount="indefinite" />
+    </rect></g>
+
+    <rect x="136" y="104" width="328" height="4" rx="2" fill="#30363d" />
+    <rect x="136" y="104" width="147" height="4" rx="2" fill="#1ed760" />
+
+    <text x="136" y="120" font-family="'Segoe UI', Ubuntu, Helvetica, Arial, sans-serif" font-size="9" fill="#6e7681">1:36</text>
+    <text x="464" y="120" font-family="'Segoe UI', Ubuntu, Helvetica, Arial, sans-serif" font-size="9" fill="#6e7681" text-anchor="end">3:34</text>
+
+    <rect x="0" y="136" width="480" height="34" fill="#161b22" />
+    <line x1="0" y1="136" x2="480" y2="136" stroke="#21262d" stroke-width="1" />
+    <text x="240" y="157" font-family="'Segoe UI', Ubuntu, Helvetica, Arial, sans-serif" font-size="12.5" font-style="italic" text-anchor="middle" fill="#1ed760">♪ we&apos;re chasing neon shadows down the boulevard ♪</text>
+  </g>
+</svg>

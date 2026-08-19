@@ -1,129 +1,148 @@
-# spotify-lyrics-badge
+# Spotify Lyrics Badge
 
-Vercel üzerinde barınan, GitHub profil README'niz için **gerçek zamanlı Spotify Now Playing + senkronize şarkı sözü** SVG kartı. [natemoo-re/novatorem](https://github.com/natemoo-re/novatorem) tarzı koyu/minimalist tasarıma, [LRCLIB](https://lrclib.net) üzerinden çekilen anlık lirik satırını ekler.
+A dynamic, dependency-free SVG card for your GitHub profile README that shows what you're **currently listening to on Spotify**, synced live with the matching **lyric line from LRCLIB**. Hosted as a single Vercel Serverless Function.
 
-> Kart, çaldığınız şarkının o anki saniyesine denk gelen lirik satırını alt kısımda gösterir. Hiçbir şey çalmıyorsa şık bir "Offline" kartına düşer. Deploy ettikten sonra `/api` uç noktasını tarayıcıda açarak kartın gerçek görüntüsünü kendiniz görebilirsiniz.
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/ibrahim-isikli/spotify-lyrics-badge&env=SPOTIFY_CLIENT_ID,SPOTIFY_CLIENT_SECRET,SPOTIFY_REFRESH_TOKEN&envDescription=Spotify%20API%20credentials%20required%20to%20read%20now-playing%20data&envLink=https://github.com/ibrahim-isikli/spotify-lyrics-badge%23spotify-api-setup&project-name=spotify-lyrics-badge&repository-name=spotify-lyrics-badge)
 
-## Özellikler
+## Overview / Features
 
-- 🎧 Spotify `currently-playing` uç noktasından anlık şarkı bilgisi, hiçbir şey çalmıyorsa son çalınan şarkıya (last played) düşer.
-- 🎤 LRCLIB'den senkronize (`syncedLyrics`) lirik verisi, `progressMs` değerine göre doğru satırın seçilmesi.
-- 🖼️ Albüm kapağı base64 olarak SVG içine gömülür (GitHub Camo CORS/hotlink sorunlarını önlemek için).
-- 🌓 Koyu tema, yuvarlatılmış köşeler, animasyonlu ekolayzer çubukları, ilerleme çubuğu.
-- ⚡ Vercel Serverless Function, agresif önbelleklemeyi engelleyen cache başlıkları.
+- **Minimal, dark card design** inspired by [natemoo-re/novatorem](https://github.com/natemoo-re/novatorem) — rounded corners, muted palette, animated equalizer bars.
+- **Live Spotify sync** — reads `currently-playing`, and gracefully falls back to your most recent `recently-played` track when nothing is active.
+- **Real-time lyric matching** — fetches synced lyrics (`syncedLyrics`) from [LRCLIB](https://lrclib.net), parses the `[mm:ss.xx]` timestamps, and picks the exact line that corresponds to the track's current playback position.
+- **Zero-dependency SVG rendering** — the card is built from a plain template string, no headless browser, no canvas, no external render service. Album art is downloaded once per request and inlined as a base64 `data:` URI so GitHub's Camo image proxy never has to follow a third-party image link.
+- **Edge/Serverless friendly** — a single stateless function with no persistent storage; runs comfortably within Vercel's free tier.
+- **Cache-aware** — response headers are tuned so Camo doesn't freeze on a stale "now playing" snapshot.
 
-## Proje Yapısı
+## Live Preview / Demo
+
+The samples below are generated straight from the real render pipeline (`npm run generate:previews`), using mock playback data — see [Sanal Ortamda Çalıştırma](#regenerating-the-previews) for how to reproduce them.
+
+| Now playing, with synced lyric | Nothing playing (fallback) |
+| --- | --- |
+| ![Now playing with synced lyrics](./assets/playing-with-lyrics.svg) | ![Offline / nothing playing](./assets/idle-offline.svg) |
+
+## Quick Start & Deployment
+
+### 1. Deploy
+
+Click **Deploy with Vercel** above, or manually:
+
+```bash
+git clone https://github.com/ibrahim-isikli/spotify-lyrics-badge.git
+cd spotify-lyrics-badge
+npm install
+npx vercel --prod
+```
+
+### 2. Configure environment variables
+
+Set these in the Vercel deploy dialog, or later under **Project → Settings → Environment Variables**:
+
+| Variable | Description |
+| --- | --- |
+| `SPOTIFY_CLIENT_ID` | Client ID of your app from the Spotify Developer Dashboard. |
+| `SPOTIFY_CLIENT_SECRET` | Client Secret of the same app. |
+| `SPOTIFY_REFRESH_TOKEN` | Long-lived refresh token obtained once via the OAuth authorization code flow (see below). |
+
+### 3. Verify
+
+Open `https://your-domain.vercel.app/api/spotify-lyrics` in a browser — you should see the SVG card render directly.
+
+## Spotify API Setup
+
+The API needs your explicit, one-time authorization to read your playback state. This is a **standard OAuth authorization code flow**, done once locally.
+
+1. Go to the [Spotify Developer Dashboard](https://developer.spotify.com/dashboard) and log in.
+2. Click **Create app**, give it any name/description.
+3. Under **Redirect URIs**, add `http://localhost:8888/callback` (only used to capture the one-time authorization code).
+4. Open **Settings** on the new app and copy the **Client ID** and **Client Secret**.
+5. Visit the following URL in your browser, replacing `CLIENT_ID`:
+
+   ```
+   https://accounts.spotify.com/authorize?client_id=CLIENT_ID&response_type=code&redirect_uri=http://localhost:8888/callback&scope=user-read-currently-playing%20user-read-playback-state%20user-read-recently-played
+   ```
+
+6. Approve the request. You'll be redirected to `http://localhost:8888/callback?code=...` (the page itself will fail to load — that's expected, just copy the `code` query parameter from the address bar).
+7. Exchange that code for a refresh token:
+
+   ```bash
+   curl -X POST https://accounts.spotify.com/api/token \
+     -H "Authorization: Basic $(echo -n 'CLIENT_ID:CLIENT_SECRET' | base64)" \
+     -d grant_type=authorization_code \
+     -d code=PASTE_YOUR_CODE_HERE \
+     -d redirect_uri=http://localhost:8888/callback
+   ```
+
+8. Copy the `refresh_token` field from the JSON response — this is your `SPOTIFY_REFRESH_TOKEN`. It doesn't expire under normal use, so this is a one-time setup step.
+
+## Usage
+
+Once deployed, embed the badge in any GitHub profile or project README:
+
+```markdown
+![Spotify Lyrics](https://your-domain.vercel.app/api/spotify-lyrics)
+```
+
+Or with HTML, if you want to control sizing:
+
+```html
+<img src="https://your-domain.vercel.app/api/spotify-lyrics" alt="Spotify Now Playing" width="480" />
+```
+
+## Local Development
+
+```bash
+npm install
+cp .env.example .env   # fill in SPOTIFY_CLIENT_ID / SPOTIFY_CLIENT_SECRET / SPOTIFY_REFRESH_TOKEN
+npx vercel dev
+```
+
+Then open `http://localhost:3000/api/spotify-lyrics`.
+
+### Type checking
+
+```bash
+npm run type-check
+```
+
+### Regenerating the previews
+
+The card templates in `lib/render.ts` can be exercised offline, without any real Spotify account, using the mock-data script:
+
+```bash
+npm run generate:previews
+```
+
+This renders both card states — a "now playing" card (with a synthesized placeholder album cover and a sample lyric line) and the offline fallback card — through the exact same `renderNowPlayingCard` / `renderOfflineCard` functions used in production, and writes them to `assets/playing-with-lyrics.svg` and `assets/idle-offline.svg`.
+
+## How It Works
+
+1. `GET /api/spotify-lyrics` triggers `lib/spotify.ts`, which exchanges the refresh token for a fresh access token and queries the `currently-playing` endpoint, falling back to `recently-played` if nothing is active right now.
+2. If a track is found, `lib/lyrics.ts` queries LRCLIB with `track_name`, `artist_name`, and `duration`, parses the `[mm:ss.xx]` synced-lyrics timestamps into milliseconds, and selects the most recent line at or before the track's `progressMs`. If no synced lyrics exist, it falls back to the first line of plain lyrics, and finally to `"♫ Instrumental or No Lyrics Found ♫"`.
+3. `lib/render.ts` downloads the album art, inlines it as a base64 `data:` URI, and composes everything into a single SVG template.
+4. `api/spotify-lyrics.ts` returns the SVG with `Content-Type: image/svg+xml` and `Cache-Control: public, max-age=0, s-maxage=1, must-revalidate` so GitHub's Camo proxy revalidates frequently instead of serving a stale snapshot.
+
+## Project Structure
 
 ```
 .
 ├── api/
-│   └── index.ts        # Vercel serverless function (SVG endpoint)
+│   └── spotify-lyrics.ts   # Vercel serverless function (SVG endpoint)
 ├── lib/
-│   ├── spotify.ts       # Spotify OAuth token yenileme + now-playing/recently-played
-│   ├── lyrics.ts        # LRCLIB entegrasyonu + LRC zaman damgası parser
-│   └── render.ts        # SVG kart şablonu (playing / offline)
+│   ├── spotify.ts          # OAuth token refresh + now-playing/recently-played
+│   ├── lyrics.ts           # LRCLIB integration + LRC timestamp parser
+│   └── render.ts           # SVG card templates (now playing / offline)
+├── scripts/
+│   └── generate-previews.ts # Offline preview generator for the README gallery
+├── assets/                  # Generated preview SVGs used in this README
 ├── .env.example
 ├── package.json
 ├── tsconfig.json
 └── vercel.json
 ```
 
-## Kurulum
+## Credits & License
 
-### 1. Bağımlılıkları yükleyin
-
-```bash
-npm install
-```
-
-### 2. Spotify Developer Dashboard'dan kimlik bilgisi alın
-
-1. [developer.spotify.com/dashboard](https://developer.spotify.com/dashboard) adresine gidip Spotify hesabınızla giriş yapın.
-2. **Create app** butonuna tıklayın, bir isim/açıklama girin.
-3. **Redirect URI** alanına şunu ekleyin: `http://localhost:8888/callback` (sadece token almak için kullanılacak, geçici bir adres).
-4. Uygulamayı oluşturduktan sonra **Settings** sayfasından `Client ID` ve `Client Secret` değerlerini not edin.
-
-### 3. Refresh token üretin (bir kereye mahsus)
-
-Spotify API, kullanıcı adına veri okumak için OAuth **authorization code** akışı gerektirir. Aşağıdaki adımları takip edin:
-
-1. Aşağıdaki URL'yi kendi `CLIENT_ID` değerinizle tarayıcınızda açın (scope'lar now-playing ve recently-played okuma içindir):
-
-   ```
-   https://accounts.spotify.com/authorize?client_id=CLIENT_ID&response_type=code&redirect_uri=http://localhost:8888/callback&scope=user-read-currently-playing%20user-read-playback-state%20user-read-recently-played
-   ```
-
-2. İzin verdikten sonra tarayıcı sizi `http://localhost:8888/callback?code=...` adresine yönlendirecek (sayfa hata verse de sorun değil, sadece URL'deki `code` parametresini kopyalayın).
-
-3. Aldığınız `code` değerini kullanarak terminalde aşağıdaki isteği çalıştırın (`CLIENT_ID` ve `CLIENT_SECRET` değerlerini kendi bilgilerinizle değiştirin):
-
-   ```bash
-   curl -X POST https://accounts.spotify.com/api/token \
-     -H "Authorization: Basic $(echo -n 'CLIENT_ID:CLIENT_SECRET' | base64)" \
-     -d grant_type=authorization_code \
-     -d code=YAPIŞTIRDIĞINIZ_CODE \
-     -d redirect_uri=http://localhost:8888/callback
-   ```
-
-4. Dönen JSON içindeki `refresh_token` değerini kopyalayın — bu, uygulamanın kalıcı olarak kullanacağı tokendır.
-
-### 4. Ortam değişkenlerini ayarlayın
-
-`.env.example` dosyasını `.env` olarak kopyalayıp değerleri doldurun:
-
-```bash
-cp .env.example .env
-```
-
-```
-SPOTIFY_CLIENT_ID=xxxxxxxx
-SPOTIFY_CLIENT_SECRET=xxxxxxxx
-SPOTIFY_REFRESH_TOKEN=xxxxxxxx
-```
-
-### 5. Yerelde çalıştırın
-
-```bash
-npx vercel dev
-```
-
-Ardından `http://localhost:3000/api` adresini tarayıcıda açarak kartı görüntüleyin.
-
-### 6. Vercel'e deploy edin
-
-```bash
-npx vercel
-```
-
-Deploy sırasında (veya Vercel Dashboard → Project → Settings → Environment Variables üzerinden) `SPOTIFY_CLIENT_ID`, `SPOTIFY_CLIENT_SECRET` ve `SPOTIFY_REFRESH_TOKEN` değişkenlerini ekleyin, sonra production'a deploy edin:
-
-```bash
-npx vercel --prod
-```
-
-## GitHub Profil README'nize Ekleme
-
-Deploy ettiğiniz Vercel domain'ini kullanarak profil README'nize aşağıdaki gibi bir görsel ekleyin:
-
-```markdown
-![Spotify](https://SIZIN-PROJENIZ.vercel.app/api)
-```
-
-GitHub, harici görselleri kendi Camo proxy'si üzerinden önbelleğe alır. Bu servis `Cache-Control: public, max-age=0, s-maxage=1, must-revalidate` başlığını göndererek Camo'nun veriyi mümkün olduğunca taze tutmasını sağlar; yine de GitHub tarafında birkaç dakikalık gecikme görebilirsiniz.
-
-## Type Check
-
-```bash
-npm run type-check
-```
-
-## Nasıl Çalışır?
-
-1. `GET /api` isteği geldiğinde `lib/spotify.ts`, refresh token ile yeni bir access token alır ve `currently-playing` uç noktasını sorgular. Hiçbir şey çalmıyorsa `recently-played` uç noktasına düşer.
-2. Bir parça bulunduysa `lib/lyrics.ts`, LRCLIB'den `track_name`, `artist_name` ve `duration` parametreleriyle senkronize lirikleri çeker, `[mm:ss.xx]` zaman damgalarını milisaniyeye çevirir ve şarkının `progressMs` değerine en yakın geçmiş satırı seçer. Senkronize lirik yoksa düz metnin ilk satırına, o da yoksa `"♫ Instrumental or No Lyrics Found ♫"` mesajına düşer.
-3. `lib/render.ts`, albüm kapağını indirip base64 data URI'ye çevirir (harici URL referansı bırakmaz) ve tüm veriyi tek bir SVG şablonuna basar.
-4. `api/index.ts`, sonucu `image/svg+xml` içerik tipiyle ve agresif önbelleklemeyi engelleyen başlıklarla döner.
-
-## Lisans
-
-MIT
+- Lyrics data provided by [LRCLIB](https://lrclib.net), a free and open lyrics API.
+- Visual design inspired by [natemoo-re/novatorem](https://github.com/natemoo-re/novatorem).
+- Released under the [MIT License](./LICENSE).
