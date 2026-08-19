@@ -1,5 +1,5 @@
-<svg width="480" height="170" viewBox="0 0 480 170" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Now playing: Golden Hour by Sable &amp; Wren">
-  <title>Golden Hour — Sable &amp; Wren</title>
+<svg width="480" height="170" viewBox="0 0 480 170" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Now playing: Violet Hour by Static Bloom">
+  <title>Violet Hour — Static Bloom</title>
   <defs>
     <clipPath id="cardClip">
       <rect x="0" y="0" width="480" height="170" rx="10" />
@@ -9,8 +9,8 @@
     </clipPath>
   </defs>
   <g clip-path="url(#cardClip)">
-    <rect x="0" y="0" width="480" height="170" fill="#0d1117" />
-    <rect x="0.5" y="0.5" width="479" height="169" rx="10" fill="none" stroke="#30363d" stroke-width="1" />
+    <rect x="0" y="0" width="480" height="170" fill="#282a36" />
+    <rect x="0.5" y="0.5" width="479" height="169" rx="10" fill="none" stroke="#6272a4" stroke-width="1" />
 
     
       <image
@@ -19,20 +19,25 @@
         clip-path="url(#albumClip)"
         preserveAspectRatio="xMidYMid slice"
       />
-      <rect x="16" y="16" width="104" height="104" rx="8" fill="none" stroke="#30363d" stroke-width="1" />
+      <rect x="16" y="16" width="104" height="104" rx="8" fill="none" stroke="#6272a4" stroke-width="1" />
     
 
-    <text x="136" y="34" font-family="'Segoe UI', Ubuntu, Helvetica, Arial, sans-serif" font-size="10" font-weight="600" letter-spacing="1.5" fill="#1db954">NOW PLAYING</text>
+    <text x="136" y="34" font-family="'Segoe UI', Ubuntu, Helvetica, Arial, sans-serif" font-size="10" font-weight="600" letter-spacing="1.5" fill="#bd93f9">NOW PLAYING</text>
 
-    <text x="136" y="58" font-family="'Segoe UI', Ubuntu, Helvetica, Arial, sans-serif" font-size="17" font-weight="700" fill="#ffffff">Golden Hour</text>
+    <text x="136" y="58" font-family="'Segoe UI', Ubuntu, Helvetica, Arial, sans-serif" font-size="17" font-weight="700" fill="#f8f8f2">Violet Hour</text>
 
-    <text x="136" y="78" font-family="'Segoe UI', Ubuntu, Helvetica, Arial, sans-serif" font-size="13" fill="#8b949e">Sable &amp; Wren</text>
+    <text x="136" y="78" font-family="'Segoe UI', Ubuntu, Helvetica, Arial, sans-serif" font-size="13" fill="#6272a4">Static Bloom</text>
 
-    <style>.eq-bar { fill: #1db954; } @keyframes eqBar0 { 0%, 100% { height: 3; y: 95; } 50% { height: 6; y: 92; } } @keyframes eqBar1 { 0%, 100% { height: 3; y: 95; } 50% { height: 12; y: 86; } } @keyframes eqBar2 { 0%, 100% { height: 3; y: 95; } 50% { height: 8; y: 90; } } @keyframes eqBar3 { 0%, 100% { height: 3; y: 95; } 50% { height: 14; y: 84; } }</style><g><rect class="eq-bar" x="136" y="95" width="3" height="3" rx="1" style="animation: eqBar0 0.7s ease-in-out infinite;" /><rect class="eq-bar" x="142" y="95" width="3" height="3" rx="1" style="animation: eqBar1 0.85s ease-in-out infinite;" /><rect class="eq-bar" x="148" y="95" width="3" height="3" rx="1" style="animation: eqBar2 1s ease-in-out infinite;" /><rect class="eq-bar" x="154" y="95" width="3" height="3" rx="1" style="animation: eqBar3 1.15s ease-in-out infinite;" /></g>
+    <style>.eq-bar { fill: #50fa7b; } @keyframes eqBar0 { 0%, 100% { height: 3; y: 95; } 50% { height: 6; y: 92; } } @keyframes eqBar1 { 0%, 100% { height: 3; y: 95; } 50% { height: 12; y: 86; } } @keyframes eqBar2 { 0%, 100% { height: 3; y: 95; } 50% { height: 8; y: 90; } } @keyframes eqBar3 { 0%, 100% { height: 3; y: 95; } 50% { height: 14; y: 84; } }</style><g><rect class="eq-bar" x="136" y="95" width="3" height="3" rx="1" style="animation: eqBar0 0.7s ease-in-out infinite;" /><rect class="eq-bar" x="142" y="95" width="3" height="3" rx="1" style="animation: eqBar1 0.85s ease-in-out infinite;" /><rect class="eq-bar" x="148" y="95" width="3" height="3" rx="1" style="animation: eqBar2 1s ease-in-out infinite;" /><rect class="eq-bar" x="154" y="95" width="3" height="3" rx="1" style="animation: eqBar3 1.15s ease-in-out infinite;" /></g>
     
+    <rect x="136" y="104" width="328" height="4" rx="2" fill="#44475a" />
+    <rect x="136" y="104" width="101" height="4" rx="2" fill="#bd93f9" />
 
-    <rect x="0" y="136" width="480" height="34" fill="#21262d" />
-    <line x1="0" y1="136" x2="480" y2="136" stroke="#30363d" stroke-width="1" />
-    <text x="240" y="157" font-family="'Segoe UI', Ubuntu, Helvetica, Arial, sans-serif" font-size="12.5" font-style="italic" text-anchor="middle" fill="#1db954">♪ we&apos;re painting the sky in gold before it fades ♪</text>
+    <text x="136" y="120" font-family="'Segoe UI', Ubuntu, Helvetica, Arial, sans-serif" font-size="9" fill="#6272a4">0:58</text>
+    <text x="464" y="120" font-family="'Segoe UI', Ubuntu, Helvetica, Arial, sans-serif" font-size="9" fill="#6272a4" text-anchor="end">3:09</text>
+
+    <rect x="0" y="136" width="480" height="34" fill="#44475a" />
+    <line x1="0" y1="136" x2="480" y2="136" stroke="#6272a4" stroke-width="1" />
+    <text x="240" y="157" font-family="'Segoe UI', Ubuntu, Helvetica, Arial, sans-serif" font-size="12.5" font-style="italic" text-anchor="middle" fill="#ff79c6">♪ count the neon lies beneath a violet sky ♪</text>
   </g>
 </svg>

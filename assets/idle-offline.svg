@@ -1,5 +1,5 @@
-<svg width="480" height="170" viewBox="0 0 480 170" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Spotify: Nothing Playing">
-  <title>Spotify — Nothing Playing</title>
+<svg width="480" height="170" viewBox="0 0 480 170" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Nothing Playing">
+  <title>Nothing Playing</title>
   <defs>
     <clipPath id="cardClip">
       <rect x="0" y="0" width="480" height="170" rx="10" />
@@ -7,11 +7,12 @@
   </defs>
   <g clip-path="url(#cardClip)">
     <rect x="0" y="0" width="480" height="170" fill="#0d1117" />
+    <rect x="0.5" y="0.5" width="479" height="169" rx="10" fill="none" stroke="#30363d" stroke-width="1" />
 
-    <circle cx="60" cy="85" r="28" fill="none" stroke="#6e7681" stroke-width="2" />
-    <path d="M 46 75 Q 60 65 74 75 M 44 85 Q 60 72 76 85 M 46 95 Q 60 88 74 95" stroke="#6e7681" stroke-width="2" fill="none" stroke-linecap="round" />
+    <circle cx="60" cy="85" r="28" fill="none" stroke="#8b949e" stroke-width="2" />
+    <path d="M 46 75 Q 60 65 74 75 M 44 85 Q 60 72 76 85 M 46 95 Q 60 88 74 95" stroke="#8b949e" stroke-width="2" fill="none" stroke-linecap="round" />
 
     <text x="110" y="79" font-family="'Segoe UI', Ubuntu, Helvetica, Arial, sans-serif" font-size="17" font-weight="700" fill="#ffffff">Offline</text>
-    <text x="110" y="101" font-family="'Segoe UI', Ubuntu, Helvetica, Arial, sans-serif" font-size="13" fill="#b3b3b3">Nothing Playing</text>
+    <text x="110" y="101" font-family="'Segoe UI', Ubuntu, Helvetica, Arial, sans-serif" font-size="13" fill="#8b949e">Nothing Playing</text>
   </g>
 </svg>

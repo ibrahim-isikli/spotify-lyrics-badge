@@ -7,6 +7,7 @@ A dynamic, dependency-free SVG card for your GitHub profile README that shows wh
 ## Overview / Features
 
 - **Minimal, dark card design** inspired by [natemoo-re/novatorem](https://github.com/natemoo-re/novatorem) — rounded corners, muted palette, animated equalizer bars.
+- **Themeable via URL query parameters** — six built-in presets (`default`, `dracula`, `catppuccin`, `tokyo-night`, `nord`, `light`) plus per-field color/radius/border overrides, no redeploy needed. See [🎨 Customization & Themes](#-customization--themes).
 - **Dual-provider playback source** — reads live "now playing" data from either the native Spotify API or Last.fm's scrobble bridge (see [Providers / Setup Modes](#providers--setup-modes)), whichever is configured. Falls back to the most recently played track when nothing is active right now.
 - **Real-time lyric matching** — fetches synced lyrics (`syncedLyrics`) from [LRCLIB](https://lrclib.net), parses the `[mm:ss.xx]` timestamps, and picks the line matching the track's current playback position. When the active provider can't report a live position (Last.fm), it shows a representative lyric line instead.
 - **Zero-dependency SVG rendering** — the card is built from a plain template string, no headless browser, no canvas, no external render service. Album art is downloaded once per request and inlined as a base64 `data:` URI so GitHub's Camo image proxy never has to follow a third-party image link.
@@ -111,6 +112,56 @@ Or with HTML, if you want to control sizing:
 <img src="https://your-domain.vercel.app/api/spotify-lyrics" alt="Spotify Now Playing" width="480" />
 ```
 
+## 🎨 Customization & Themes
+
+Every visual aspect of the card is driven by URL query parameters — no fork, no redeploy, no build step. Parsing and validation live in `lib/theme.ts`.
+
+### Built-in themes
+
+Pass `?theme=<name>` to apply a preset. Unknown or omitted values fall back to `default`.
+
+| Theme | Preview palette | Example URL |
+| --- | --- | --- |
+| `default` | ![default palette](./assets/palette-default.svg) | `?theme=default` |
+| `dracula` | ![dracula palette](./assets/palette-dracula.svg) | `?theme=dracula` |
+| `catppuccin` | ![catppuccin palette](./assets/palette-catppuccin.svg) | `?theme=catppuccin` |
+| `tokyo-night` | ![tokyo-night palette](./assets/palette-tokyo-night.svg) | `?theme=tokyo-night` |
+| `nord` | ![nord palette](./assets/palette-nord.svg) | `?theme=nord` |
+| `light` | ![light palette](./assets/palette-light.svg) | `?theme=light` |
+
+Full-card example with `?theme=dracula`:
+
+![Dracula theme example](./assets/theme-dracula-example.svg)
+
+### Query parameters
+
+Individual colors override the selected theme's field on top of it — you can mix a preset with one or two custom colors, or go fully custom from `default`. Color values accept a hex code with or without the leading `#` (`ff79c6` or `#ff79c6`) or a bare CSS color keyword (`tomato`); anything else is ignored and the theme's default is kept.
+
+| Parameter | Default | Description |
+| --- | --- | --- |
+| `theme` | `default` | One of the built-in theme names above. |
+| `bg_color` | theme's `background` | Card background color. |
+| `title_color` | theme's `title` | Track title text color. |
+| `artist_color` | theme's `artist` | Artist name / muted text (time labels, icons) color. |
+| `lyrics_color` | theme's `lyrics` | Footer lyric line color. |
+| `bar_color` | theme's `progressBar` | Progress bar fill and "NOW PLAYING" label color. |
+| `border_color` | theme's `border` | Card and album-art border color. |
+| `border_radius` | `10` | Corner radius in pixels, `0`–`85`. `0` gives sharp square corners. |
+| `show_border` | `true` | Set to `false` to make the border transparent. |
+
+### Examples
+
+```markdown
+<!-- Dracula theme -->
+![Spotify Lyrics](https://your-domain.vercel.app/api/spotify-lyrics?theme=dracula)
+
+<!-- Custom colors -->
+![Spotify Lyrics](https://your-domain.vercel.app/api/spotify-lyrics?bg_color=000000&lyrics_color=ff007f&border_radius=0)
+
+<!-- Preset + one overridden color, no border, sharp corners -->
+![Spotify Lyrics](https://your-domain.vercel.app/api/spotify-lyrics?theme=nord&bar_color=ebcb8b&show_border=false&border_radius=0)
+```
+
 ## Local Development
 
 ```bash
@@ -133,7 +184,7 @@ npm run type-check
 npm test
 ```
 
-Runs assertion-based checks (`scripts/test.ts`) against the LRC parsing/selection logic and the Last.fm/provider selection logic, with `fetch` mocked so no network access or real credentials are needed.
+Runs assertion-based checks (`scripts/test.ts`) against the LRC parsing/selection logic, the Last.fm/provider selection logic, and the `parseThemeParams` query-string logic (preset selection, color overrides/sanitization, `border_radius` clamping, `show_border`), with `fetch` mocked so no network access or real credentials are needed.
 
 ### Regenerating the previews
 
@@ -143,14 +194,15 @@ The card templates in `lib/render.ts` can be exercised offline, without any real
 npm run generate:previews
 ```
 
-This renders three card states — a Spotify-mode "now playing" card (with live progress), a Last.fm-mode "now playing" card (no progress bar, showcase lyric line), and the offline fallback card — through the exact same `renderNowPlayingCard` / `renderOfflineCard` functions used in production, and writes them to `assets/playing-with-lyrics.svg`, `assets/playing-lastfm-mode.svg`, and `assets/idle-offline.svg`.
+This renders the Spotify-mode, Last.fm-mode, and offline preview cards, a themed example (`?theme=dracula`), and a small palette swatch per built-in theme — all through the exact same `renderNowPlayingCard` / `renderOfflineCard` / `parseThemeParams` used in production — and writes them into `assets/`.
 
 ## How It Works
 
 1. `GET /api/spotify-lyrics` calls `lib/provider.ts`, which picks a data source based on which environment variables are set: Last.fm (`lib/lastfm.ts`) if `LASTFM_API_KEY`/`LASTFM_USER` are configured, otherwise Spotify (`lib/spotify.ts`) if `SPOTIFY_REFRESH_TOKEN` is configured. Both return the same provider-agnostic `TrackInfo` shape. Spotify falls back to `recently-played` when nothing is currently playing; Last.fm falls back to the last scrobble.
 2. If a track is found, `lib/lyrics.ts` queries LRCLIB with `track_name`/`artist_name` (and `duration` when known), parses the `[mm:ss.xx]` synced-lyrics timestamps into milliseconds, and selects the line matching the track's `progressMs` when that's available (Spotify), or a representative showcase line when it isn't (Last.fm). If no synced lyrics exist, it falls back to the first line of plain lyrics, and finally to `"♫ Instrumental or No Lyrics Found ♫"`.
-3. `lib/render.ts` downloads the album art, inlines it as a base64 `data:` URI, and composes everything into a single SVG template — omitting the progress bar when playback position isn't known.
-4. `api/spotify-lyrics.ts` returns the SVG with `Content-Type: image/svg+xml` and `Cache-Control: public, max-age=0, s-maxage=1, must-revalidate` so GitHub's Camo proxy revalidates frequently instead of serving a stale snapshot.
+3. In parallel, `lib/theme.ts` parses the request's URL query parameters into a `StyleConfig` — a built-in theme (or `default`) with any `*_color`/`border_radius`/`show_border` overrides applied on top.
+4. `lib/render.ts` downloads the album art, inlines it as a base64 `data:` URI, and composes everything into a single SVG template using that `StyleConfig` for every color/radius/border — omitting the progress bar when playback position isn't known. The equalizer bars are animated with CSS `@keyframes` (one per bar) tied to the theme's `equalizer` color.
+5. `api/spotify-lyrics.ts` returns the SVG with `Content-Type: image/svg+xml` and `Cache-Control: public, max-age=0, s-maxage=1, must-revalidate` so GitHub's Camo proxy revalidates frequently instead of serving a stale snapshot.
 
 ## Project Structure
 
@@ -163,6 +215,7 @@ This renders three card states — a Spotify-mode "now playing" card (with live 
 │   ├── spotify.ts           # OAuth token refresh + now-playing/recently-played
 │   ├── lastfm.ts            # Last.fm recenttracks integration (Spotify Free bridge)
 │   ├── lyrics.ts            # LRCLIB integration + LRC timestamp parser
+│   ├── theme.ts             # Theme presets + URL query parameter parsing
 │   └── render.ts            # SVG card templates (now playing / offline)
 ├── scripts/
 │   ├── generate-previews.ts # Offline preview generator for the README gallery
